@@ -1,6 +1,17 @@
 깃허브 리모트 저장소 https://github.com/GyuYangYeon/CodingTest.git
 로컬 저장소 C:\Github\CODE\CodingTest
 
+깃 허브 섹션
+
+워킹 디렉토리 -> 스타팅 아레아 -> 로컬 Repo -> 리모트 Repo
+
+워킹 디렉토리는 작업할 파일이 있는 디렉토리(내컴퓨터)
+스타팅 아레아는 커밋을 수행할 파일들이 Add 명령어로 올라가는 영역
+로컬 리포는 작업 로컬 영역으로 git-commit 명령으로 로컬 리포로 올릴 수 있음
+리모트 repo는 git push 명령어로 파일을 올릴 수 있음
+
+리모트-> 워킹 디렉토리로 가져오고 싶을 경우에는 git pull 명령어로 한번에 가져올수 있음
+
 git
 -> 설치 유무 파악 및 명령어 설명 보기
 
@@ -9,6 +20,8 @@ git --version
 
 git config --global user.email rbdid369@skku.edu
 git config --global user.name YeonGyuYang
+-> 초기 깃 허브 설정
+
 git clone https://github.com/GyuYangYeon/CodingTest.git
 ->리모트 저장소에 있는 파일을 로컬 저장소로 다운로드 하기
 
@@ -17,3 +30,26 @@ git add [파일명]
 git commit -m "Add Tutorial Test File "
 git push
 -> 깃 허브에 올리고자 하는 파일을 로컬에 있는 것을 추가 시켜서 코멘트를 담. 그후에 푸쉬를 통해 깃허브 사이트에 올라간 것을 확인 가능
+
+
+/////////////////////////////////////////////////////커밋하는 방법
+cd C:\Github\CODE\CodingTest 파일로 이동 후,
+git clone https://github.com/GyuYangYeon/CodingTest.git -> 리모트 Repo 다운로드
+
+->이후 새로운 파일 만들어 넣기
+git status -> 지금 변경 사항 추가 파일 확인 가능
+git add [만든 파일] -> 스타팅 아레아로 수정 파일 올리기 (git status 치면 잘 올라가져있음 확인가능)
+git reset [만든 파일] -> 스타팅 아레아로 올린 수정파일 다시 워킹 디렉토리로 내리기
+git add . -> 깃프로젝트 기준 모든 수정 내역을 다 올리기 가능
+
+파일을 다 올린 후
+git commit -m "변경 설명내용"
+git push 를 하면 홈페이지에 업로드 확인 가능
+
+
+/////////////////////////커밋한 내용 이전으로 돌아가고 싶을 경우
+git log 로 각각의 커밋 내역을 확인 가느 
+git reset --hard [해쉬코드] -> 이 명령 이후에 발생한 수정사항 들은 다 없애버리기 가능하다.
+
+////////////////////////커밋 수정 내용을 바꾸고 싶은 경우
+git commit --amend [add&sub] -> ESD -> wq!
