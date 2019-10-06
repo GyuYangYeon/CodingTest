@@ -1,0 +1,19 @@
+깃허브 리모트 저장소 https://github.com/GyuYangYeon/CodingTest.git
+로컬 저장소 C:\Github\CODE\CodingTest
+
+git
+-> 설치 유무 파악 및 명령어 설명 보기
+
+git --version
+-> 설치된 깃 버전 확인하기
+
+git config --global user.email rbdid369@skku.edu
+git config --global user.name YeonGyuYang
+git clone https://github.com/GyuYangYeon/CodingTest.git
+->리모트 저장소에 있는 파일을 로컬 저장소로 다운로드 하기
+
+cd 업로드할 파일 txt 파일 경로로 이동 후,
+git add [파일명]
+git commit -m "Add Tutorial Test File "
+git push
+-> 깃 허브에 올리고자 하는 파일을 로컬에 있는 것을 추가 시켜서 코멘트를 담. 그후에 푸쉬를 통해 깃허브 사이트에 올라간 것을 확인 가능
