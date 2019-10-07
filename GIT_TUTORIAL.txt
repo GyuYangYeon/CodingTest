@@ -31,12 +31,7 @@ git commit -m "Add Tutorial Test File "
 git push
 -> 깃 허브에 올리고자 하는 파일을 로컬에 있는 것을 추가 시켜서 코멘트를 담. 그후에 푸쉬를 통해 깃허브 사이트에 올라간 것을 확인 가능
 
-
-<<<<<<< HEAD
-/////////////////////////////////////////////////////커밋하는 방법
-=======
 ////////////////커밋하는 방법
->>>>>>> 4dabec62e0647429c8a6afcb1f6d2a8a552b3977
 cd C:\Github\CODE\CodingTest 파일로 이동 후,
 git clone https://github.com/GyuYangYeon/CodingTest.git -> 리모트 Repo 다운로드
 
@@ -44,7 +39,6 @@ git clone https://github.com/GyuYangYeon/CodingTest.git -> 리모트 Repo 다운
 git status -> 지금 변경 사항 추가 파일 확인 가능
 git add [만든 파일] -> 스타팅 아레아로 수정 파일 올리기 (git status 치면 잘 올라가져있음 확인가능)
 git reset [만든 파일] -> 스타팅 아레아로 올린 수정파일 다시 워킹 디렉토리로 내리기
-<<<<<<< HEAD
 git add . -> 깃프로젝트 기준 모든 수정 내역을 다 올리기 가능
 
 파일을 다 올린 후
@@ -58,11 +52,7 @@ git reset --hard [해쉬코드] -> 이 명령 이후에 발생한 수정사항 �
 
 ////////////////////////커밋 수정 내용을 바꾸고 싶은 경우
 git commit --amend [add&sub] -> ESD -> wq!
-=======
-
 git add . -> 깃프로젝트 기준 모든 수정 내역을 다 올리기 가능
->>>>>>> 4dabec62e0647429c8a6afcb1f6d2a8a552b3977
-
 //-> 깃허브에 파일경로 만드는방법
 git add ./" [폴더이름]
 "git commit -m "comment"
