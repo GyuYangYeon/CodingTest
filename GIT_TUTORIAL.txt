@@ -62,3 +62,10 @@ git commit --amend [add&sub] -> ESD -> wq!
 
 git add . -> 깃프로젝트 기준 모든 수정 내역을 다 올리기 가능
 >>>>>>> 4dabec62e0647429c8a6afcb1f6d2a8a552b3977
+
+//-> 깃허브에 파일경로 만드는방법
+git add ./" [폴더이름]
+"git commit -m "comment"
+git push
+
+받아와서 수정하고 싶으면 git bash를 써서 스타팅 아레아에 추가한 후에 수정을 진행하면 된다.
