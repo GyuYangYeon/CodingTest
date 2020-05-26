@@ -1,0 +1,85 @@
+#include <iostream>
+#include <functional>
+#include <queue>
+
+using namespace std;
+
+#define MAX 100001
+#define BOUNDARY(a,b) ((a)<=(b) && (a)>=0)
+#define FOR0(a, b) for(int(a)=0; (a)<(b); (a)++)
+#define FOR1(a, b) for(int(a)=1; (a)<=(b); (a)++)
+
+int N, K;
+bool visited[MAX] = { 0, };
+
+typedef struct __POINT{
+
+	int x;
+	int cnt;
+
+	__POINT(int value1, int value2): x(value1), cnt(value2){
+	}
+
+} MOVING;
+
+struct cmp
+{
+	bool operator()(__POINT a, __POINT b){
+		return a.cnt > b.cnt;
+	}
+};
+
+void BFS(int i){
+	priority_queue<__POINT, vector<__POINT>, cmp> pq;
+
+	MOVING start(i, 0);
+	pq.push(start);
+	visited[i] = true;
+
+	while (!pq.empty())
+	{
+		MOVING cur = pq.top();
+		pq.pop();
+		visited[cur.x] = true;
+
+		if (cur.x == K){
+			cout << cur.cnt << endl;
+			break;
+		}
+
+		if (BOUNDARY(cur.x + 1, MAX) && (visited[cur.x + 1] == false)){
+			MOVING nxt(cur.x+1, cur.cnt + 1);
+			pq.push(nxt);
+			
+		}
+
+		if (BOUNDARY(cur.x - 1, MAX) && (visited[cur.x - 1] == false)){
+			MOVING nxt(cur.x-1, cur.cnt + 1);
+			pq.push(nxt);
+		}
+
+		if (BOUNDARY(cur.x*2, MAX) && (visited[cur.x*2] == false)){
+			MOVING nxt(cur.x*2, cur.cnt);
+			pq.push(nxt);
+		}
+
+	}
+
+
+
+}
+
+int main(){
+
+	ios::sync_with_stdio(0);
+	cin.tie();
+	cout.tie();
+
+	cin >> N >> K;
+
+	BFS(N);
+
+
+
+	return 0;
+}
