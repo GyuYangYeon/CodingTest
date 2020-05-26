@@ -1,0 +1,136 @@
+//삼성 코테
+//1210. Ladder1
+// https://swexpertacademy.com/main/talk/solvingClub/problemView.do?solveclubId=AV7nOxFq61oDFAW7&contestProbId=AV14ABYKADACFAYh&probBoxId=AWOrpZYaBMcDFAUR&type=PROBLEM&problemBoxTitle=%EC%97%AD%EB%9F%89%ED%85%8C%EC%8A%A4%ED%8A%B8+%EC%A4%80%EB%B9%84%EB%A5%BC+%EC%9C%84%ED%95%9C+%EB%AC%B8%EC%A0%9C+%28D4%29&problemBoxCnt=22
+
+#include <iostream>
+#include <functional>
+#include <queue>
+#include <string.h>
+
+using namespace std;
+
+#define MAX 100
+#define BOUNDARY(a,b) ((a)<(b) && (a)>=0)
+#define FOR0(a, b) for(int(a)=0; (a)<(b); (a)++)
+#define FOR1(a, b) for(int(a)=1; (a)<=(b); (a)++)
+
+int Ladder_Map[MAX][MAX] = { 0, };
+bool visited[MAX][MAX] = { 0, };
+
+//Direction
+int dx[3] = { -1, 1, 0 };
+int dy[3] = {  0, 0, 1 };
+
+typedef struct __POINT
+{
+	int x;
+	int y;
+
+	__POINT(int a, int b) :x(a), y(b){
+	}
+} XYPOINT;
+
+queue<XYPOINT> qs;
+queue<XYPOINT> qjournal;
+
+XYPOINT End_point(0,0);
+
+void Clear_Queue(queue<XYPOINT> *q){
+	while (!q->empty())
+	{
+		q->pop();
+	}
+}
+
+int BFS(int test_num){
+	bool find_ans_flag = 0;
+	//스타트 구간 하나씩 빼어오기
+	while (!qs.empty())
+	{
+		XYPOINT cur = qs.front();
+		qs.pop();
+		qjournal.push(cur);
+
+		//스타트 구간에서 맵 탐색 시작
+		while (!qjournal.empty())
+		{
+			XYPOINT qj_cur = qjournal.front();
+			qjournal.pop();
+			bool check_flag = 0;
+
+			if ((qj_cur.x == End_point.x) && (qj_cur.y == End_point.y)){
+				find_ans_flag = 1;
+				break;
+			}
+
+			
+
+			FOR0(direction, 3){
+				int ny = qj_cur.y + dy[direction];
+				int nx = qj_cur.x + dx[direction];				
+
+				if (check_flag == 1) continue;
+				if (BOUNDARY(ny, MAX) && BOUNDARY(nx, MAX) && (Ladder_Map[ny][nx] == 1) && (visited[ny][nx] == 0)){					
+					XYPOINT nxt(nx, ny);
+					qjournal.push(nxt);
+					visited[ny][nx] = 1;
+
+					if (nx != qj_cur.x){ check_flag = 1; }
+				}
+			}
+
+		}
+
+		if (find_ans_flag == 1){
+			cout << '#' << test_num << ' '<< cur.x << endl;
+			break;
+		}
+		//초기화 잡아주기
+		memset(visited, 0, sizeof(visited));
+		Clear_Queue(&qjournal);
+	}
+	
+
+	
+
+	return 0;
+}
+int main(){
+	
+	ios::sync_with_stdio(0);
+	cin.tie();
+	cout.tie();
+
+	FOR1(i, 10){
+		int test_num;
+		cin >> test_num;
+
+		FOR0(y, 100){
+			FOR0(x, 100){
+				int input;
+				cin >> input;
+				Ladder_Map[y][x] = input;
+				if ((y == 0) && (input == 1)){
+					XYPOINT input_tmp(x, y);
+					qs.push(input_tmp);
+				}
+				else if(input == 2){
+					End_point.x = x;
+					End_point.y = y;
+					Ladder_Map[y][x] = 1;
+				}
+
+			}
+		}
+
+		//코드 실행
+		 BFS(i);
+
+		//초기화 잡기
+		test_num = 0;
+		memset(visited, 0, sizeof(visited));
+		memset(Ladder_Map, 0, sizeof(Ladder_Map));
+		Clear_Queue(&qjournal);
+		Clear_Queue(&qs);
+	}
+}
