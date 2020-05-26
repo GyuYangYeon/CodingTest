@@ -1,0 +1,87 @@
+//백준
+//https://www.acmicpc.net/problem/12851
+
+#include <iostream>
+#include <functional>
+#include <queue>
+
+using namespace std;
+
+#define MAX 100001
+#define BOUNDARY(a,b) ((a)<=(b) && (a)>=0)
+#define FOR0(a, b) for(int(a)=0; (a)<(b); (a)++)
+#define FOR1(a, b) for(int(a)=1; (a)<=(b); (a)++)
+
+int N, K;
+
+bool visited[MAX] = { 0, };
+
+void BFS(int i){
+	//first x, second cnt;
+	queue<pair<int, int>> q;
+
+	q.push(make_pair(i, 0));
+	visited[i] = true;
+
+	int ans_min = 0;
+	int res = 0;
+
+	while (!q.empty())
+	{
+		int cur_x = q.front().first;
+		int cur_cnt = q.front().second;
+		visited[cur_x] = 1;
+		q.pop();
+
+		if (cur_x == K){
+			if (ans_min == 0){
+				ans_min = cur_cnt;
+				res++;
+			}
+			else{
+				if (cur_cnt <= ans_min) res++;
+				else
+				{
+					break;
+				}
+			}
+
+		}
+
+		if ((cur_cnt > ans_min) && (ans_min != 0)) continue;
+
+		if (BOUNDARY(cur_x + 1, MAX) && (visited[cur_x+1] == false)){
+			int nxt_x = cur_x + 1;
+			int nxt_cnt = cur_cnt + 1;
+			q.push(make_pair(nxt_x, nxt_cnt));
+		}
+
+		if (BOUNDARY(cur_x - 1, MAX) && (visited[cur_x-1] == false)){
+			int nxt_x = cur_x - 1;
+			int nxt_cnt = cur_cnt + 1;
+			q.push(make_pair(nxt_x, nxt_cnt));
+		}
+
+		if (BOUNDARY(cur_x*2, MAX) && (visited[cur_x*2] == false)){
+			int nxt_x = cur_x*2;
+			int nxt_cnt = cur_cnt + 1;
+			q.push(make_pair(nxt_x, nxt_cnt));
+		}
+	}
+	cout << ans_min << '\n' << res << '\n';
+}
+
+int main(){
+
+	ios::sync_with_stdio(0);
+	cin.tie();
+	cout.tie();
+
+	cin >> N >> K;
+
+	BFS(N);
+
+
+
+	return 0;
+}
