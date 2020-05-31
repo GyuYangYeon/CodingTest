@@ -1,0 +1,235 @@
+//14890번 경사로
+//www.acmicpc.net/problem/14890
+
+#include <iostream>
+#include <algorithm>
+#include <queue>
+
+using namespace std;
+
+#define MAX 105
+#define FOR0(a, b) for(int (a)=0; (a)<(b); (a)++)
+#define DOWN 0
+#define RIGHT 1
+#define BOUNDARTY(a,b) (((a)>=0)&&((a)<(b)))
+
+
+//first는 x, second는 y
+queue<pair<int, int>> q_down;
+queue<pair<int, int>> q_right;
+
+int N;
+int L;
+int Map[MAX][MAX] = { 0, };
+int res = 0;
+bool bridge_Flag[MAX][MAX][2] = { 0, };
+bool Ans_Flag[MAX][MAX] = { 0, };
+
+void BFS(queue<pair<int, int>> *pq, int dir){
+
+	while (!pq->empty())
+	{
+		int nx = pq->front().first;
+		int ny = pq->front().second;
+		pq->pop();
+		int py = 0;
+		int px = 0;		
+
+		while (1)
+		{
+			//방향에 따른 좌표값 갱신
+			if (dir == DOWN){
+				ny += 1;
+				py = (ny - 1);
+				px = nx;
+			}
+			else if (dir == RIGHT){
+				nx += 1;
+				py = ny;
+				px = (nx - 1);
+			}
+
+			if (!BOUNDARTY(nx, N)) break;
+			if (!BOUNDARTY(ny, N)) break;
+
+			//값이 같을 경우
+			if (Map[ny][nx] == Map[py][px]){
+				if (dir == DOWN){
+					if ((ny == (N - 1))){
+						if (!Ans_Flag[ny][nx]) res++;
+						Ans_Flag[ny][nx] = true;
+						break;
+					}
+				}
+				else if (dir == RIGHT){
+					if ((nx == (N - 1))){
+						if (!Ans_Flag[ny][nx]) res++;
+						Ans_Flag[ny][nx] = true;
+						break;
+					}
+				}
+				
+			}
+
+
+
+			//만약 값이 다를 경우
+			else if (Map[ny][nx] != Map[py][px]){
+
+				if (abs(Map[ny][nx] - Map[py][px]) > 1) break;
+
+				int flag = 1;
+				//방향에 따른 다리 설치 판단
+				if (dir == DOWN){
+					if (Map[ny][nx] > Map[py][px]){
+						//이전에 설치할경우
+						//값이 같은지 비교
+						for (int y = py; y > (py - L + 1); y--){
+							if (!BOUNDARTY(y, N)){ flag = 0;  continue; }
+							if (!flag) continue;
+							if (!BOUNDARTY(y - 1, N)){ flag = 0; continue; }
+							if (Map[y][px] != Map[y - 1][px]){
+								flag = 0;
+							}
+						}
+						
+						for (int y = py; y >= (py- L+1); y--){
+							if (!BOUNDARTY(y, N)){ flag = 0;  continue; }
+							if (!flag) continue;
+							if (bridge_Flag[y][px][dir]) flag = 0;
+						}
+							//다리 상태 플래그 업데이트
+							if (flag == 1){
+								for (int y = py; y >= (py - L + 1); y--){
+									bridge_Flag[y][px][dir] = 1;
+								}
+								//다리 상태 다음부터 돌수 있도록 넣어주기
+								q_right.push(make_pair(nx, ny));
+							}							
+							flag = 1;
+					}
+					else{
+						//다음에 설치할 경우
+						for (int y = ny; y < (ny + L - 1); y++){
+							if (!BOUNDARTY(y, N)){ flag = 0;  continue; }
+							if (!flag) continue;
+							if (!BOUNDARTY(y+ 1, N)){ flag = 0; continue; }
+							if (Map[y][px] != Map[y + 1][px]) flag = 0;
+						}
+
+						for (int y = ny; y <= (ny + L - 1); y++){
+							if (!BOUNDARTY(y, N)){ flag = 0;  continue; }
+							if (!flag) continue;
+							if (bridge_Flag[y][nx][dir]) flag = 0;
+						}
+							//다리 상태 플래그 업데이트
+							if (flag == 1){
+								for (int y = ny; y <= (ny + L - 1); y++){
+									bridge_Flag[y][px][dir] = 1;
+								}
+							//다리 상태 다음부터 돌수 있도록 넣어주기
+							q_right.push(make_pair(nx, ny + L - 1));
+							}
+							
+					}
+				}
+
+
+
+				//오른쪾으로 가는 경우
+				else if (dir == RIGHT){
+					int flag = 1;
+					//이전에 설치할 경우
+					if (Map[ny][nx] > Map[py][px]){
+
+						//값이 다 같은지 비교
+						for (int x = px; x > (px - L + 1); x--){
+							if (!BOUNDARTY(x, N)){ flag = 0;  continue; }
+							if (!flag) continue;
+							if (!BOUNDARTY(x - 1, N)){ flag = 0; continue; }
+							if (Map[py][x]!=Map[py][x-1])
+								flag = 0;
+						}
+
+						for (int x = px; x >= (px - L + 1); x--){
+							if (!BOUNDARTY(x, N)){ flag = 0;  continue; }
+							if (!flag) continue;
+							if (bridge_Flag[py][x][dir]) 
+								flag = 0;
+						}
+						//다리 상태 플래그 업데이트
+						if (flag == 1){
+							for (int x = px; x >= (px - L + 1); x--){
+								bridge_Flag[py][x][dir] = 1;
+							}
+
+							//다리 상태 다음부터 돌수 있도록 넣어주기
+							q_down.push(make_pair(nx, ny));
+						}
+						
+
+						flag = 1;
+					}
+					else{
+						//다음에 설치할 경우
+						for (int x = nx; x < (nx - L + 1); x++){
+							if (!BOUNDARTY(x, N)){ flag = 0;  continue; }
+							if (!flag) continue;
+							if (!BOUNDARTY(x + 1, N)){ flag = 0; continue; }
+							if (Map[py][x] != Map[py][x+1]) 
+								flag = 0;
+						}
+
+
+						//다음에 설치할 경우
+						for (int x = nx; x <= (nx - L + 1); x++){
+							if (!BOUNDARTY(x, N)){ flag = 0;  continue; }
+							if (!flag) continue;
+							if (bridge_Flag[py][x][dir]) flag = 0;
+						}
+						//다리 상태 플래그 업데이트
+						if (flag == 1){
+							for (int x = nx; x <= (nx + L - 1); x++){
+								bridge_Flag[py][x][dir] = 1;
+							}
+
+							//다리 상태 다음부터 돌수 있도록 넣어주기
+							q_down.push(make_pair(nx + L - 1, nx));
+						}
+						
+					}
+				}
+
+				break;
+			}
+		}
+	}
+
+}
+
+int main(){
+
+	ios::sync_with_stdio(false);
+	cin.tie(0);
+
+	cin >> N >> L;
+
+	FOR0(y, N){
+		FOR0(x, N){
+			cin >> Map[y][x];
+			if (y == 0){
+				q_right.push(make_pair(x, y));
+			}
+			if (x == 0){
+				q_down.push(make_pair(x, y));
+			}
+		}
+	}
+
+	BFS(&q_down, RIGHT);
+	BFS(&q_right, DOWN);
+
+	cout << res;
+
+	return 0;
+}
