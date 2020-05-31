@@ -1,0 +1,94 @@
+//14888번 연산자 끼워넣기
+//https://www.acmicpc.net/problem/14888
+
+
+#include <iostream>
+
+#define BIGGER(a,b) (a)>(b)?(a):(b)
+#define SMALLER(a,b) (a)>(b)?(b):(a)
+#define FOR0(a,b) for(int (a)=0;(a)<(b);(a)++)
+#define MAX 105
+#define PLUS 0
+#define MINUS 1
+#define MULTIPLIER 2
+#define DIVIDER 3
+
+int N;
+int Aj[MAX] = { -1, };
+int Operator[4] = { 0, };
+int min_ans = 987654321;
+int max_ans = -987654321;
+
+using namespace std;
+
+
+void DFS(int index, int sum){
+
+	if (index == N - 1){
+		max_ans = BIGGER(max_ans, sum);
+		min_ans = SMALLER(min_ans, sum);
+		return;
+	}
+
+	if (index == 0) sum = Aj[index];
+
+	FOR0(i, 4){
+		if (Operator[i] != 0){
+			switch (i)
+			{
+			case PLUS:
+				Operator[i]--;
+				if (Operator[i] < 0) Operator[i] = 0;
+				DFS(index + 1, (sum + Aj[index + 1]));
+				Operator[i]++;
+				break;
+			case MINUS:
+				Operator[i]--;
+				if (Operator[i] < 0) Operator[i] = 0;
+				DFS(index + 1, (sum - Aj[index + 1]));
+				Operator[i]++;
+
+				break;
+			case MULTIPLIER:
+				Operator[i]--;
+				if (Operator[i] < 0) Operator[i] = 0;
+				DFS(index + 1, (sum * Aj[index + 1]));
+				Operator[i]++;
+
+				break;
+			case DIVIDER:
+				Operator[i]--;
+				if (Operator[i] < 0) Operator[i] = 0;
+				DFS(index + 1, (sum/Aj[index + 1]));
+				Operator[i]++;
+
+				break;
+			default:
+				break;
+			}			
+		}
+	}
+}
+
+
+int main(){
+
+	ios::sync_with_stdio(0);
+	cin.tie(0);
+
+	cin >> N;
+	FOR0(i, N){
+		cin >> Aj[i];
+	}
+
+	FOR0(i, 4){
+		cin >> Operator[i];
+	}
+
+	DFS(0, Aj[0]);
+
+	cout << max_ans << '\n';
+	cout << min_ans << '\n';
+
+	return 0;
+}
