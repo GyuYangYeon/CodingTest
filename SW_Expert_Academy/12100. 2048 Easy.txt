@@ -1,0 +1,148 @@
+//12100번 2048(EASY)
+//https://www.acmicpc.net/problem/12100
+//구조체 안에 핵심 함수들 업 회전 함수 구현이 중요
+//특히 회전 함수는 디버깅 필수
+//초기 끝조건 생각 필수
+
+#include<iostream>
+#include<algorithm>
+#include<vector>
+#include<string.h>
+#include<cstring>
+#include<deque>
+#include<queue>
+
+#define MAX 23
+#define FOR1(a,b) for(int (a)=1; (a)<=(b); (a)++)
+#define FOR0(a,b) for(int (a)=0; (a)<(b); (a)++)
+#define FOR0_(a,b) for(int (a)=((b)-1); (a)>=0; (a)--)
+#define COMP(a, b) (a)>(b)?(a):(b)
+#define BOUNDARY(a,b) (((a)>=0)&&((a)<(b)))
+#define COMP(a,b) (a)>(b)?(a):(b)
+
+int N;
+int Ansure = 0;
+using namespace std;
+
+char DIR[] = { 'U', 'R', 'D', 'L' };
+deque<char> d;
+
+struct INFO{
+
+	int Map[MAX][MAX];
+
+	void Rotate(){
+		INFO cur;
+		memcpy(&cur.Map, Map, sizeof(Map));
+		
+		
+		//Rotation 구현
+		int j = 0;
+		FOR0(x, N){
+			int k = 0;
+			FOR0_(y, N){
+				Map[j][k] = cur.Map[y][x];
+				k++;
+			}
+			j++;
+		}
+	}
+
+	int max_value(){
+		int res = 0;
+		FOR0(y, N){
+			FOR0(x, N){
+				res = res < (Map[y][x]) ? (Map[y][x]) : (res);
+			}
+		}
+		return res;
+	}
+
+	void Moving(){
+
+		INFO cur;
+		bool Flag[MAX][MAX] = { 0, };
+		memcpy(&cur.Map, Map, sizeof(Map));
+
+		FOR0(cy, N){
+			FOR0(cx, N){
+
+				if (Map[cy][cx] == 0) continue;
+
+				int nx = cx;
+				int ny = cy;
+
+				while (1)
+				{
+					//다음위치 갱신
+					nx = cx;
+					ny = ny - 1;
+					if (BOUNDARY(nx, N) && BOUNDARY(ny, N) && (Map[ny][nx] == 0)){
+						int px = nx;
+						int py = ny + 1;
+						Map[ny][nx] = Map[py][px];
+						Map[py][px] = 0;
+					}
+					else if (BOUNDARY(nx, N) && BOUNDARY(ny, N) && (Map[ny][nx] != 0) && (Flag[ny][nx]==false)){
+						int px = nx;
+						int py = ny + 1;
+						if (Map[ny][nx] == Map[py][px]){
+							Map[ny][nx] = Map[ny][nx] + Map[py][px];
+							Map[py][px] = 0;
+							Flag[ny][nx] = 1;
+							break;
+						}
+					}
+					else{
+						break;
+					}
+
+				}
+
+
+			}
+		}
+
+
+	}
+};
+
+INFO START;
+
+void DFS(INFO Map,int depth){
+
+	if (depth == 5){		
+		Ansure = Ansure>Map.max_value()?Ansure:Map.max_value();
+		return;
+	}
+
+	FOR0(dir, 4){
+		INFO NXTMAP = Map;
+		NXTMAP.Moving();
+		d.push_back(DIR[dir]);
+		DFS(NXTMAP, depth + 1);
+		d.pop_back();
+		Map.Rotate();
+	}
+}
+
+int main(){
+	ios::sync_with_stdio(0);
+	cin.tie(0);
+	cout.tie(0);
+
+	cin >> N;
+
+	int i = 0;
+	FOR0(y, N){
+		FOR0(x, N){
+			cin >> START.Map[y][x];
+		}
+	}
+
+	DFS(START, 0);
+
+	cout <<Ansure;
+
+	return 0;
+}

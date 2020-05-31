@@ -1,0 +1,57 @@
+//14501번퇴사
+//https://www.acmicpc.net/problem/14501
+
+#define _CRT_SECURE_NO_WARNINGS
+#include <iostream>
+
+#define BIGGER(a, b) (a)>(b)?(a):(b)
+#define MAX 20
+using namespace std;
+
+//  0     1
+// 시간  비용
+int TC[MAX][2] = { 0, };
+int N=0;
+int res = 0;
+int visited[MAX] = { 0, };
+
+void DFS(int index, int money){
+
+	if (index <= N){
+		if ((index == N ) && (TC[index-1][0] == 1)){
+			res = BIGGER(res, money);
+		}
+		res = BIGGER(res, money);
+	}
+	else{
+		return;
+	}	
+
+	if (index >= N) return;
+
+	DFS(index + TC[index][0], money + TC[index][1]);
+
+	DFS(index + 1, money);
+	
+
+}
+
+int main(){
+
+	ios::sync_with_stdio(0);
+	cin.tie(0);
+
+	cin >> N;
+
+	for (int y = 0; y < N; y++){
+		for (int x = 0; x < 2; x++){
+			cin >> TC[y][x];
+		}
+	}
+
+	DFS(0, 0);
+
+	cout << res;
+
+	return 0;
+}
