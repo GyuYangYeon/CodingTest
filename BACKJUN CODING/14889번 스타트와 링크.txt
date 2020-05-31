@@ -1,0 +1,123 @@
+/*
+//14889번 스타트와 링크
+//https:www.acmicpc.net/problem/14889
+//
+*/
+#include <algorithm>
+#include <queue>
+#include <iostream>
+#include <vector>
+#include <cstring>
+#define MAX 25
+#define FOR0(a,b) for(int (a) = 0; (a) <(b); (a)++)
+#define SMAALER(a, b) (a)>(b)?(b):(a)
+
+int N;
+int S[MAX][MAX] = { 0, };
+int team1[MAX / 2] = { 0, };
+int team2[MAX / 2] = { 0, };
+int team_flag[MAX][MAX] = { 0, };
+int ans_min = 987654321;
+int sum1 = 0;
+int sum2 = 0;
+
+using namespace std;
+
+vector<int> vteam1;
+
+void vector_clear(vector<int> *p){
+	while (!p->empty())
+	{
+		p->pop_back();
+	}
+}
+
+void fTeam_sum(){
+
+	FOR0(index, vteam1.size()){
+		team1[index] = vteam1[index];
+	}
+	FOR0(index, (N / 2)){
+		FOR0(n, N){
+			team_flag[team1[index]][n]++;
+			team_flag[n][team1[index]]++;
+		}
+	}
+
+	//팀간 시너지 값 구하기 2일경우 팀 1의 시너지값, 0일경우 팀 2의 시너지값
+	FOR0(y, N){
+		FOR0(x, N){
+			if ((team_flag[y][x] == (2))&&(y!=x)){
+				sum1 += S[y][x];
+			}
+			else if ((team_flag[y][x] == 0) && (y != x)){
+				sum2 += S[y][x];
+			}
+		}
+	}
+	int tmp_dif = abs(sum1 - sum2);
+	ans_min = SMAALER(tmp_dif, ans_min);
+
+}
+
+void DFS(int index, int team1_Cnt, int team2_Cnt){
+
+	//마지막 인덱스가 team2로 팀 편성을 했을 경우
+	if ((index == (N - 1)) && (team1_Cnt==(N/2)) && (team2_Cnt==((N/2)-1))){
+		/////////////////////////여기에 코드 작성
+		fTeam_sum();
+		sum1 = 0;
+		sum2 = 0;
+		memset(team_flag, 0, sizeof(team_flag));
+		//////////////////////////////////////////
+		return;
+	}
+	//마지막 인덱스가 team1으로 팀 편성을 했을 경우
+	else if((index == (N - 1)) && (team1_Cnt == ((N / 2)-1)) && (team2_Cnt == (N / 2))){
+		vteam1.push_back(index);
+		////////////////////////////////여기에 코드 작성
+		fTeam_sum();
+		sum1 = 0;
+		sum2 = 0;
+		memset(team_flag, 0, sizeof(team_flag));
+		//////////////////////////////////////////
+		vteam1.pop_back();
+		return;
+	}
+	else if(index >= N){
+		return;
+	}
+
+	if (team1_Cnt < (N / 2)){
+		vteam1.push_back(index);
+		DFS(index + 1, team1_Cnt + 1, team2_Cnt);
+		vteam1.pop_back();
+	}
+
+	if (team2_Cnt < (N / 2)){
+		DFS(index + 1, team1_Cnt, team2_Cnt + 1);
+	}
+}
+
+void Divide_Team(){
+	DFS(0, 0, 0);
+}
+
+int main(){
+
+	ios::sync_with_stdio(0);
+	cin.tie(0);
+
+	cin >> N;
+
+	FOR0(y, N){
+		FOR0(x, N){
+			cin >> S[y][x];
+		}
+	}
+
+	Divide_Team();
+
+	cout << ans_min;
+	return 0;
+}
