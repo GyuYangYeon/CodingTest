@@ -3,209 +3,176 @@
 
 #include <iostream>
 #include <algorithm>
-#include <queue>
+#include <math.h>
+#include <deque>
+#include <cstring>
+
+#define MAX 105
+#define BOUNDARY(a,b) (((a)>=0)&&((a)<(b)))
+#define FOR0(a,b) for(int (a)=0;(a)<(b); (a)++)
+#define FOR0_(a,b) for(int (a)=(b)-1;(a)>=0; (a)--)
 
 using namespace std;
 
-#define MAX 105
-#define FOR0(a, b) for(int (a)=0; (a)<(b); (a)++)
-#define DOWN 0
-#define RIGHT 1
-#define BOUNDARTY(a,b) (((a)>=0)&&((a)<(b)))
-
-
-//first는 x, second는 y
-queue<pair<int, int>> q_down;
-queue<pair<int, int>> q_right;
-
-int N;
-int L;
-int Map[MAX][MAX] = { 0, };
+int N=0;
+int L = 0;
 int res = 0;
-bool bridge_Flag[MAX][MAX][2] = { 0, };
-bool Ans_Flag[MAX][MAX] = { 0, };
+deque<pair<int, int>> d;
 
-void BFS(queue<pair<int, int>> *pq, int dir){
+struct INFO
+{
+	int map[MAX][MAX];
+	bool Ans_flag[MAX];
+	bool bridge_flag[MAX][MAX];
 
-	while (!pq->empty())
-	{
-		int nx = pq->front().first;
-		int ny = pq->front().second;
-		pq->pop();
-		int py = 0;
-		int px = 0;		
+	void rotate(){
+		INFO cur;
 
-		while (1)
+		int cy = 0;
+		FOR0(nx, N){
+			int cx = 0;
+			FOR0_(ny, N){
+				cur.map[cy][cx] = map[ny][nx];
+				cx++;
+			}
+			cy++;
+		}
+		memcpy(map, cur.map, sizeof(map));
+	}
+
+	void start_point(deque<pair<int, int>>* p){
+		FOR0(x, N){
+			p->push_back(make_pair(x, 0));
+		}
+	}
+
+	void init(deque<pair<int, int>>* p){
+		memset(Ans_flag, 0, sizeof(Ans_flag));
+		memset(bridge_flag, 0, sizeof(bridge_flag));
+		while (!p->empty())
 		{
-			//방향에 따른 좌표값 갱신
-			if (dir == DOWN){
-				ny += 1;
-				py = (ny - 1);
-				px = nx;
-			}
-			else if (dir == RIGHT){
-				nx += 1;
-				py = ny;
-				px = (nx - 1);
+			p->pop_back();
+		}
+	}
+};
+
+void BFS(deque<pair<int, int>> *p, INFO *mp){
+	
+	while (!p->empty())
+	{
+		int nx = p->front().first;
+		int ny = p->front().second;
+		int cx = nx;
+		int cy = ny;
+		p->pop_front();
+
+		while (1){
+			//다음 좌표 값 갱신(다음 좌표, 이전좌표)
+			ny += 1; nx = nx;
+			cy = ny - 1; cx = nx;
+
+			//현재 커런트가 엔드 조건에 도달 시
+			if (cy == (N - 1)){
+				if (!(mp->Ans_flag[cx])){
+					res++;
+					mp->Ans_flag[cx] = 1;
+					break;
+				}
 			}
 
-			if (!BOUNDARTY(nx, N)) break;
-			if (!BOUNDARTY(ny, N)) break;
+			//범위 벗어나면 break;
+			if (!BOUNDARY(ny, N)) 
+				break;			
 
-			//값이 같을 경우
-			if (Map[ny][nx] == Map[py][px]){
-				if (dir == DOWN){
-					if ((ny == (N - 1))){
-						if (!Ans_Flag[ny][nx]) res++;
-						Ans_Flag[ny][nx] = true;
+			//탐색 시작
+			//다음과 이전 값이 같을 경우
+			if (mp->map[ny][nx] == mp->map[cy][cx]){
+				//엔드 조건 탐색
+				if (ny == (N - 1)){
+					if (!(mp->Ans_flag[nx])){
+						res++;
+						mp->Ans_flag[nx] = 1;
 						break;
 					}
 				}
-				else if (dir == RIGHT){
-					if ((nx == (N - 1))){
-						if (!Ans_Flag[ny][nx]) res++;
-						Ans_Flag[ny][nx] = true;
-						break;
-					}
-				}
-				
 			}
 
+			//다음과 이전 값이 다를 경우
+			else if (mp->map[ny][nx] != mp->map[cy][cx]){
 
-
-			//만약 값이 다를 경우
-			else if (Map[ny][nx] != Map[py][px]){
-
-				if (abs(Map[ny][nx] - Map[py][px]) > 1) break;
-
-				int flag = 1;
-				//방향에 따른 다리 설치 판단
-				if (dir == DOWN){
-					if (Map[ny][nx] > Map[py][px]){
-						//이전에 설치할경우
-						//값이 같은지 비교
-						for (int y = py; y > (py - L + 1); y--){
-							if (!BOUNDARTY(y, N)){ flag = 0;  continue; }
-							if (!flag) continue;
-							if (!BOUNDARTY(y - 1, N)){ flag = 0; continue; }
-							if (Map[y][px] != Map[y - 1][px]){
+				//값차이 1이상 걍 탈출
+				if (abs(mp->map[ny][nx] - mp->map[cy][cx]) > 1){
+					break;
+				}
+				//값차이가 1 이내 일경우
+				else{
+					//다음 값이 더 클경우 이전 좌표에 다리 설치 진행
+					if (mp->map[ny][nx] > mp->map[cy][cx]){
+						int flag = 1;
+						//->L 길이 동안 다음 값이 다 같은지 확인, 다르면 break;
+						for (int sy = cy - L + 1; sy < cy; sy++){
+							if (!flag) 
+								break;
+							if (mp->map[sy][cx] != mp->map[sy + 1][cx])
 								flag = 0;
+						}
+						//->L 길이에 다리 설치에 flag에 이전에 다리를 설치했는지 확인하고 없으면 다리 설치 및
+						//  플래그 설정
+						for (int sy = cy - L + 1; sy <= cy; sy++){
+							if ((!flag)) 
+								break;
+							if (mp->bridge_flag[sy][cx]){
+								flag = 0;
+								break;
 							}
-						}
-						
-						for (int y = py; y >= (py- L+1); y--){
-							if (!BOUNDARTY(y, N)){ flag = 0;  continue; }
-							if (!flag) continue;
-							if (bridge_Flag[y][px][dir]) flag = 0;
-						}
-							//다리 상태 플래그 업데이트
-							if (flag == 1){
-								for (int y = py; y >= (py - L + 1); y--){
-									bridge_Flag[y][px][dir] = 1;
-								}
-								//다리 상태 다음부터 돌수 있도록 넣어주기
-								q_right.push(make_pair(nx, ny));
-							}							
-							flag = 1;
-					}
-					else{
-						//다음에 설치할 경우
-						for (int y = ny; y < (ny + L - 1); y++){
-							if (!BOUNDARTY(y, N)){ flag = 0;  continue; }
-							if (!flag) continue;
-							if (!BOUNDARTY(y+ 1, N)){ flag = 0; continue; }
-							if (Map[y][px] != Map[y + 1][px]) flag = 0;
 						}
 
-						for (int y = ny; y <= (ny + L - 1); y++){
-							if (!BOUNDARTY(y, N)){ flag = 0;  continue; }
-							if (!flag) continue;
-							if (bridge_Flag[y][nx][dir]) flag = 0;
-						}
-							//다리 상태 플래그 업데이트
-							if (flag == 1){
-								for (int y = ny; y <= (ny + L - 1); y++){
-									bridge_Flag[y][px][dir] = 1;
-								}
-							//다리 상태 다음부터 돌수 있도록 넣어주기
-							q_right.push(make_pair(nx, ny + L - 1));
+						if (flag){
+							for (int sy = cy - L + 1; sy <= cy; sy++){
+								mp->bridge_flag[sy][cx] = 1;
 							}
-							
+							p->push_front(make_pair(nx, ny));
+						}						
+					}
+					//이전 값이 더 클경우 다음 좌표에 다리 설치 진행
+					else if (mp->map[ny][nx] < mp->map[cy][cx]){
+						int flag = 1;
+						//->L 길이 동안 값이 다 같은지 확인, 다르면 break;
+						for (int sy = ny; sy < ny + L - 1; sy++){
+							if (!flag) 
+								break;
+							if (mp->map[sy][cx] != mp->map[sy + 1][cx])
+								flag = 0;
+						}
+						//->L 길이에 다리 설치에 flag에 이전에 다리를 설치했는지 확인하고 없으면 다리 설치 및
+						//  플래그 설정
+						for (int sy = ny; sy <= ny + L - 1; sy++){
+							if ((!flag)) 
+								break;
+							if (mp->bridge_flag[sy][cx]){
+								flag = 0;
+								break;
+							}
+						}
+
+						if (flag){
+							for (int sy = ny; sy <= ny + L - 1; sy++){
+								mp->bridge_flag[sy][cx] = 1;
+							}
+							p->push_front(make_pair(nx, ny + L - 1));
+						}
 					}
 				}
 
-
-
-				//오른쪾으로 가는 경우
-				else if (dir == RIGHT){
-					int flag = 1;
-					//이전에 설치할 경우
-					if (Map[ny][nx] > Map[py][px]){
-
-						//값이 다 같은지 비교
-						for (int x = px; x > (px - L + 1); x--){
-							if (!BOUNDARTY(x, N)){ flag = 0;  continue; }
-							if (!flag) continue;
-							if (!BOUNDARTY(x - 1, N)){ flag = 0; continue; }
-							if (Map[py][x]!=Map[py][x-1])
-								flag = 0;
-						}
-
-						for (int x = px; x >= (px - L + 1); x--){
-							if (!BOUNDARTY(x, N)){ flag = 0;  continue; }
-							if (!flag) continue;
-							if (bridge_Flag[py][x][dir]) 
-								flag = 0;
-						}
-						//다리 상태 플래그 업데이트
-						if (flag == 1){
-							for (int x = px; x >= (px - L + 1); x--){
-								bridge_Flag[py][x][dir] = 1;
-							}
-
-							//다리 상태 다음부터 돌수 있도록 넣어주기
-							q_down.push(make_pair(nx, ny));
-						}
-						
-
-						flag = 1;
-					}
-					else{
-						//다음에 설치할 경우
-						for (int x = nx; x < (nx - L + 1); x++){
-							if (!BOUNDARTY(x, N)){ flag = 0;  continue; }
-							if (!flag) continue;
-							if (!BOUNDARTY(x + 1, N)){ flag = 0; continue; }
-							if (Map[py][x] != Map[py][x+1]) 
-								flag = 0;
-						}
-
-
-						//다음에 설치할 경우
-						for (int x = nx; x <= (nx - L + 1); x++){
-							if (!BOUNDARTY(x, N)){ flag = 0;  continue; }
-							if (!flag) continue;
-							if (bridge_Flag[py][x][dir]) flag = 0;
-						}
-						//다리 상태 플래그 업데이트
-						if (flag == 1){
-							for (int x = nx; x <= (nx + L - 1); x++){
-								bridge_Flag[py][x][dir] = 1;
-							}
-
-							//다리 상태 다음부터 돌수 있도록 넣어주기
-							q_down.push(make_pair(nx + L - 1, nx));
-						}
-						
-					}
-				}
-
+				//값이 다르면 도중에 break내고 다시 push해서 읽어나가기 실행
 				break;
 			}
 		}
 	}
 
 }
+
+INFO BOARD;
 
 int main(){
 
@@ -216,18 +183,17 @@ int main(){
 
 	FOR0(y, N){
 		FOR0(x, N){
-			cin >> Map[y][x];
-			if (y == 0){
-				q_right.push(make_pair(x, y));
-			}
-			if (x == 0){
-				q_down.push(make_pair(x, y));
-			}
+			cin >> BOARD.map[y][x];
 		}
 	}
 
-	BFS(&q_down, RIGHT);
-	BFS(&q_right, DOWN);
+	BOARD.start_point(&d);
+	BFS(&d, &BOARD);
+
+	BOARD.init(&d);
+	BOARD.rotate();
+	BOARD.start_point(&d);
+	BFS(&d, &BOARD);
 
 	cout << res;
 
