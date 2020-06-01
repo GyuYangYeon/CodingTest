@@ -1,0 +1,163 @@
+//14891번 톱니바퀴
+//acmicpc.net/problem/14891
+
+#include <iostream>
+#include <cstring>
+#include <math.h>
+#define MAX 105
+#define BOUNDARY(a,b) (((a)>=0)&&((a)<(b)))
+#define CW 1
+#define CCW -1
+#define WHEELS 4
+using namespace std;
+
+int times;
+
+int operation_cnt;
+//0은 index, 1은 방향
+int command[MAX][2] = { 0, };
+
+struct INFO{
+	int status[8];
+	int dir = 0;
+
+	void shift(int dir){
+		//CW로 돌리기
+		if (dir == CW){
+			int tmp[8];
+			memcpy(tmp, status, sizeof(status));
+
+			for (int i = 1; i < 8; i++){
+				tmp[i] = status[i - 1];
+			}
+			tmp[0] = status[7];
+
+			memcpy(status, tmp, sizeof(status));
+		}
+		//CCW로 돌리기
+		else if (dir == CCW){
+			int tmp[8];
+			memcpy(tmp, status, sizeof(status));
+
+			for (int i = 0; i < 7; i++){
+				tmp[i] = status[i + 1];
+			}
+			tmp[7] = status[0];
+			memcpy(status, tmp, sizeof(status));
+		}
+	}
+
+	void dir_init(){
+		dir = 0;
+	}
+
+	INFO() :dir(0){
+	}
+};
+
+//[4][0->현재상태, 1->다음상태]
+INFO Wheel[WHEELS][2];
+
+void solve(int index, int dir){
+	//다음 휠상태에 표시해두기
+	for (int i = 0; i < WHEELS; i++){
+		Wheel[i][1] = Wheel[i][0];
+	}
+
+
+	//wheel 상태 업데이트
+	Wheel[index][0].dir = dir;
+	Wheel[index][1].shift(dir);
+
+	//인덱스의 오른쪽 휠 돌리기
+	for (int nxt = index + 1; nxt < WHEELS; nxt++){
+		if (!BOUNDARY(nxt, WHEELS)) continue;
+
+		//이전 왼쪽과 오른쪽의 극성이 다르다면 다음 회전상태 돌리기
+		if (Wheel[nxt - 1][0].status[2] != Wheel[nxt][0].status[6]){
+			if (Wheel[nxt - 1][0].dir == CCW){
+				Wheel[nxt][0].dir = CW;
+				Wheel[nxt][1].shift(CW);
+			}
+			else if (Wheel[nxt - 1][0].dir == CW){
+				Wheel[nxt][0].dir = CCW;
+				Wheel[nxt][1].shift(CCW);
+			}
+		}
+	}
+
+	//인덱스의 왼쪽 휠 돌리기
+	for (int nxt = index - 1; nxt >= 0; nxt--){
+		if (!BOUNDARY(nxt, WHEELS)) continue;
+		
+		//이전 오른쪽과 다음 왼쪽의 극성이 다르다면 회전 상태 돌리기
+		if (Wheel[nxt + 1][0].status[6] != Wheel[nxt][0].status[2]){
+			if (Wheel[nxt + 1][0].dir == CCW){
+				Wheel[nxt][0].dir = CW;
+				Wheel[nxt][1].shift(CW);
+			}
+			else if (Wheel[nxt + 1][0].dir == CW){
+				Wheel[nxt][0].dir = CCW;
+				Wheel[nxt][1].shift(CCW);
+			}
+		}
+	}
+	
+
+	//다음 휠 상태 현재 상태로 업데이트 해주기
+	//다음 휠상태에 표시해두기
+	for (int i = 0; i < WHEELS; i++){
+		Wheel[i][0] = Wheel[i][1];
+	}
+
+}
+
+
+int sum(){
+	int res=0;
+
+	for(int i = 0; i < WHEELS; i++){
+		if (i == 0){
+			res += (Wheel[i][0].status[0]);
+		}
+		else{
+		res += (Wheel[i][0].status[0]*pow(2, i));
+		}
+	}
+
+	return res;
+}
+int main(){
+
+	ios::sync_with_stdio(0);
+	cin.tie(0);
+
+	//바퀴 상태 입력받기
+	for (int i = 0; i < WHEELS; i++){
+		for (int j = 0; j < 8; j++){
+			char tmp;
+			cin >> tmp;
+			Wheel[i][0].status[j] = tmp - '0';
+		}
+	}
+
+	//바퀴
+	cin >> operation_cnt;
+
+	//커맨드 입력
+	for (int j = 0; j < operation_cnt; j++){
+		for (int i = 0; i < 2; i++){
+			cin >> command[j][i];
+			if (i == 0) command[j][i]--;
+		}
+	}
+
+	for (int i = 0; i < operation_cnt; i++)
+	{		
+		solve(command[i][0], command[i][1]);		
+	}
+
+	int ans = sum();
+	cout << ans;
+	return 0;
+}
