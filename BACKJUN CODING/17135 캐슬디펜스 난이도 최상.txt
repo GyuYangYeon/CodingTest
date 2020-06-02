@@ -1,0 +1,208 @@
+//17135 캐슬디펜스
+//acmicpc.net/problem/17135
+//난이도 최상 -> 끝 행렬에서 갈 수 있는 방향을 구하기 위해 BFS를 사용해야함
+
+
+#include <iostream>
+#include <math.h>
+#include <list>
+#include <queue>
+
+#define MAX 15
+
+using namespace std;
+
+int sero;
+int garo;
+int range;
+int Map_START[MAX][MAX] = { 0, };
+int Map[MAX][MAX][2] = { 0, };
+int time = 0;
+int res = 0;
+
+//first =x;
+list<int> li;
+
+struct KILL
+{
+	int x;
+	int y;
+	int cnt;
+};
+
+KILL kill[3];
+
+void Enermy_Moving(){
+
+	int cur = time % 2;
+	int nxt = !cur;
+
+	int py = 0;
+	for (int y = 1; y < sero; y++)
+	{
+		int px = 0;
+		for (int x = 0; x < garo; x++){
+			Map[y][x][nxt] = Map[py][px][cur];
+			px++;
+		}
+		py++;
+	}
+
+	for (int x = 0; x < garo; x++){
+		Map[0][x][nxt] = 0;
+	}
+
+	time++;
+
+}
+
+KILL BFS(int x, int y, int Lenth){
+	queue<KILL> q;
+	KILL START;
+	START.x = x;
+	START.y = y;
+	START.cnt = 1;
+	int cur = time % 2;
+	q.push(START);
+
+	int dy[3] = {-1, 0, 0};
+	int dx[3] = {0, -1, 1};
+	bool visited[MAX][MAX] = { 0, };
+
+	KILL TARGET = START;
+	TARGET.cnt = -1;
+	TARGET.x = garo;
+
+	while (!q.empty())
+	{
+		KILL CUR = q.front();
+		q.pop();
+
+		if ((TARGET.cnt != -1) && (TARGET.cnt < CUR.cnt)){
+			break;
+		}
+
+		if (Map[CUR.y][CUR.x][cur] == 1){
+			if ((TARGET.x >CUR.x) || ((TARGET.x > CUR.x) && (TARGET.cnt >=CUR.cnt))){
+				TARGET = CUR;
+			}
+		}
+
+		for (int i = 0; i < 3; i++)
+		{
+			int ny = CUR.y + dy[i];
+			int nx = CUR.x + dx[i];
+
+			if ((ny >= 0) && (ny < sero) && (nx >= 0) && (nx < garo) && (visited[ny][nx]==0)){
+				if ((CUR.cnt +1)<=Lenth)
+				{
+					KILL NXT;
+					NXT.x = nx;
+					NXT.y = ny;
+					NXT.cnt = CUR.cnt + 1;
+					visited[ny][nx] = true;
+
+					q.push(NXT);
+				}				
+			}
+		}
+	}
+
+	return TARGET;
+
+
+
+}
+
+int ATTACK(){
+
+	int cur_time = time % 2;
+	int achor[3];
+	int result=0;
+
+	//궁수들의 위치 배열에 넣어주기
+	list<int>::iterator iter; 
+	int i = 0;
+	for (iter = li.begin(); iter != li.end(); iter++){
+		achor[i] = *iter;
+		i++;
+	}
+
+	for (int term = 0; term < sero; term++)
+	{
+		cur_time = time % 2;
+		for (int i = 0; i < 3; i++)
+		{
+			//공격 시작
+			kill[i] = BFS(achor[i], sero-1, range);
+		}
+
+		for (int i = 0; i < 3; i++)
+		{
+			if ((Map[kill[i].y][kill[i].x][cur_time] == 1)&&(kill[i].cnt!=-1)){
+				Map[kill[i].y][kill[i].x][cur_time] = 0;
+				result++;
+			}
+		}
+		
+
+		//밑으로 무빙
+		Enermy_Moving();
+	}
+
+	return result;
+
+}
+
+void Sellect_DFS(int index, int archor){
+	if (archor == 3){
+		//궁수가 3명이 되었으니 무엇인가 실행해봐
+		
+		int cur = time % 2;
+		for (int y = 0; y < sero; y++)
+		{
+			for (int x = 0; x < garo; x++){
+				Map[y][x][cur] = Map_START[y][x];
+			}
+		}
+
+		int tmp = 0;
+		tmp = ATTACK();
+		res = res < tmp ? tmp : res;
+		return;
+	}
+
+
+	if (index >= garo){
+		return;
+	}
+
+	li.push_back(index);
+	Sellect_DFS(index + 1, archor + 1);
+	li.pop_back();
+	
+	Sellect_DFS(index + 1, archor);
+
+
+}
+
+int main(){
+	ios::sync_with_stdio(false);
+	cin.tie(0);
+
+	cin >> sero >> garo >> range;
+
+	for (int y = 0; y < sero; y++)
+	{
+		for (int x = 0; x < garo; x++){
+			cin >> Map[y][x][0];
+			Map_START[y][x] = Map[y][x][0];
+		}
+	}
+	
+	Sellect_DFS(0, 0);
+
+	cout << res;
+
+	return 0;
+}
