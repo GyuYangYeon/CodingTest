@@ -1,0 +1,140 @@
+//아기상어 
+//acmicpc.net/problem/16236
+//제일 어려운 부분은 아기상어가 잡을 수 있는 물고기 중에
+//제일 위쪽에 있는 물고기를 우선순위로 잡으며
+//또한 같은 거리에 위것들중에서도 가장 왼쪽에 있는 물고기를
+//잡아나가야하는 문제
+//이를 위해 BFS를 다음과 같이 활용
+//
+/*
+int flag = 1;
+while (flag)
+{
+	현재 상태 큐에 담기
+		타켓 INFO 구조를 잡음
+		방문 지도를 만듦
+		TARGET.y = N;
+	TARGET.time = -1;
+	while (!q.empty())
+	{
+		현재 큐에서 꺼내 CUR 값을 보는데 타겟이 - 1이 아니며 CUR time이 클경우 탈출
+			이러한 BFS 구조는 같은 너비의 제일 가까운 곳에서 BFS를 탈출 가능하게 하며
+			그 밑에 조건문은 갈 수 있는 곳중에 가장 위쪽에 있으며 가장 왼쪽에 있을 경우
+			가지고 오는 아이디어다.
+	}
+
+	if (flag){
+		shark = TARGET;
+		shark.hunting++;
+		Map[shark.y][shark.x] = 0;
+		if (shark.hunting == shark.size){
+			shark.size++;
+			shark.hunting = 0;
+		}
+	}
+}
+*/
+#include <iostream>
+#include <queue>
+
+#define MAX 20
+#define BOUNDARY(a,b) (((a)>=0)&&((a)<(b)))
+using namespace std;
+
+struct INFO{
+	int x, y, size, hunting, time;
+
+	INFO() :size(2){
+	}
+};
+
+INFO shark;
+
+int N;
+int Map[MAX][MAX] = { 0, };
+int dy[] = { 0, 0, -1, 1 };
+int dx[] = { -1, 1, 0, 0 };
+
+int main(){
+	ios::sync_with_stdio(0);
+	cin.tie(0);
+
+
+	cin >> N;
+	for (int y = 0; y < N; y++)
+	{
+		for (int x = 0; x < N; x++){
+			cin >> Map[y][x];
+
+			if (Map[y][x] == 9){
+				shark.x = x;
+				shark.y = y;
+				shark.size = 2;
+				Map[y][x] = 0;
+			}
+		}
+	}
+
+	int flag = 1;
+	while (flag)
+	{
+		flag = 0;
+		queue<INFO> q;
+		q.push(shark);
+		
+		INFO TARGET;
+		TARGET.y = N;
+		TARGET.time = -1;
+		bool visited[MAX][MAX] = { 0, };
+		visited[shark.y][shark.x] = true;
+		while (!q.empty())
+		{
+			INFO CUR = q.front();
+			q.pop();
+
+			if ((TARGET.time != -1) && (TARGET.time < CUR.time)){
+				break;
+			}
+
+			if ((Map[CUR.y][CUR.x]!=0) && (Map[CUR.y][CUR.x] < CUR.size)){
+				if ((TARGET.y > CUR.y) || ((TARGET.y == CUR.y) && (TARGET.x > CUR.x))){
+					TARGET = CUR;
+					flag = 1;
+				}
+			}
+
+			for (int i = 0; i < 4; i++){
+				int nx = CUR.x + dx[i];
+				int ny = CUR.y + dy[i];
+				//바운더리를 넘어가지 않을 경우
+				if (BOUNDARY(nx, N) && BOUNDARY(ny, N)){
+					if (visited[ny][nx]==0){
+						if (Map[ny][nx] <= CUR.size){
+							INFO NXT = CUR;
+							NXT.x = nx;
+							NXT.y = ny;
+							NXT.time++;
+							visited[ny][nx] = true;
+							q.push(NXT);
+						}
+					}
+				}
+			}
+		}
+
+		if (flag){
+			shark = TARGET;
+			shark.hunting++;
+			Map[shark.y][shark.x] = 0;
+			if (shark.hunting == shark.size){
+				shark.size++;
+				shark.hunting = 0;
+			}
+		}
+	}
+
+	cout << shark.time;
+
+
+	return 0;
+}
