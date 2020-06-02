@@ -1,0 +1,171 @@
+//17406번 배열 돌리기4
+///acmicpc.net/problem/17406
+//사이즈에 따른 톱니 회전 구현 알고리즘을
+//잘 생각해봐야한다.
+//size BOundary 정하는 것과
+//출발점을 BFS로 잡고 돌리는 것이 관건!
+//30번쨰 줄 잘 참고
+#include <iostream>
+#include <queue>
+#include <cstring>
+#include <list>
+
+using namespace std;
+#define MAX 50
+
+//탐색 경로 우선순위 우 하 좌  상
+int dx[] = {1,0,-1,0};
+int dy[] = {0,1,0,-1};
+
+int sero = 0;
+int garo = 0;
+int turn = 0;
+int command[6][3] = {0,};
+
+struct INFO{
+	int MAP[MAX][MAX];
+
+
+
+	void Rotation(int x, int y, int size){
+		bool visited[MAX][MAX] = { 0, };
+
+		int TMP[MAX][MAX] = { 0, };
+		memcpy(TMP, MAP, sizeof(TMP));
+
+		queue<pair<int, int>> q;
+		for (int i = 1; i <= size; i++)
+		{
+			q.push(make_pair(x - i, y - i));
+		}
+
+		int j = 1;
+		while (!q.empty())
+		{
+			int cx = q.front().first;
+			int cy = q.front().second;
+			q.pop();
+			int nx = cx;
+			int ny = cy;
+
+			for (int i = 0; i < 4; i++){
+				
+				while (1)
+				{
+					int px = nx;
+					int py = ny;
+					nx += dx[i];
+					ny += dy[i];
+
+					if ((visited[ny][nx] == 0) && (nx >= x - j) && (nx <= x + j) && (ny >= y - j) && (ny <= y + j))
+					{
+						visited[ny][nx] = true;
+						MAP[ny][nx] = TMP[py][px];
+					}
+					else
+					{
+						nx -= dx[i];
+						ny -= dy[i];
+						break;
+					}
+
+				}	
+			}
+			MAP[cy][cx] = TMP[cy+1][cx];
+			j++;
+		}
+	}
+
+	int SUM(){
+		int res=987654321;
+
+		int tmp = 0;
+		for (int y = 0; y < sero; y++){
+			for (int x = 0; x < garo; x++){
+				tmp += MAP[y][x];
+			}
+			res = res>tmp?tmp:res;
+			tmp = 0;
+		}
+
+		return res;
+	}
+};
+
+INFO START;
+bool visited[6] = { 0, };
+list<int> li;
+int answer = 987654321;
+
+
+//연산 수행 리스트에 명령 순서 다 담겨 있음
+void operation(INFO *p){
+
+	auto iter = li.begin();
+	while (iter != li.end())
+	{
+		//command 인덱스 정보
+		//i 0 ->sero y
+		//i 1 ->garo x
+		//i 2 ->size size		
+		p->Rotation(command[*iter][1], command[*iter][0], command[*iter][2]);
+		iter++;
+	}
+}
+
+void DFS(int depth, int search_num){
+
+	if (depth == (search_num)){
+		//명령 수행
+		INFO CUR = START;
+		operation(&CUR);
+		int tmp = CUR.SUM();
+		answer = answer > tmp ? tmp : answer;
+		return;
+	}
+
+	for (int index = 0; index < search_num; index++){
+		//방문하지 않았으면 방문 시작 
+		if (visited[index] == 0){
+			visited[index] = 1;
+			li.push_back(index);
+			DFS(depth + 1, search_num);
+			visited[index] = 0;
+			li.pop_back();
+		}
+	}
+}
+
+int main(){
+
+	ios::sync_with_stdio(0);
+	cin.tie(0);
+
+	cin >> sero >> garo >> turn;
+
+
+	for (int y = 0; y < sero; y++){
+		for (int x = 0; x < garo; x++){
+			cin >> START.MAP[y][x];
+		}
+	}
+
+	//톱니 돌리기 명령 받기
+	//i 0 ->sero y
+	//i 1 ->garo x
+	//i 2 ->size size
+	for (int index = 0; index < turn; index++){
+		for (int i = 0; i < 3; i++){
+			cin >> command[index][i];
+		}
+		//인덱스를 0부터 시작하니깐 하나씩 감소
+		command[index][0]--;
+		command[index][1]--;
+	}
+
+	DFS(0 , turn);
+
+
+	cout << answer;
+	return 0;
+}
