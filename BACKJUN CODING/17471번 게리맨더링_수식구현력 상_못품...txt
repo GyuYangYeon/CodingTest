@@ -1,0 +1,189 @@
+//17471번 게리맨더링
+//acmicpc.net/problem/17471
+
+#include <iostream>
+#include <list>
+#include <math.h>
+#include <cstring>
+#include <vector>
+#define MAX 11
+#define FOR0(a, b) for(int(a)=0; (a)<(b); (a)++)
+
+using namespace std;
+
+struct _PARTY{
+
+	int people[MAX];
+	bool link[MAX][MAX];
+	vector<int> v;
+	vector<int> v_oder;
+	list<int> li;
+	bool flag;
+	int people_sum;
+	bool visited[MAX];
+	bool TOTAL_FLAG[MAX];
+	_PARTY() :flag(0), people_sum(0){
+	}
+
+	void init(){
+		v_oder.clear();
+		flag = 0;
+		people_sum = 0;
+		memset(visited, 0, sizeof(visited));
+		memset(TOTAL_FLAG, 0, sizeof(TOTAL_FLAG));
+	}
+
+	void select2(int index, int Sel){
+
+		if (li.size() < 2) {
+			auto iter = li.begin();
+			TOTAL_FLAG[*iter] = 1;
+			return;
+		}
+
+		if ((Sel == 2)){
+			FOR0(i, (v.size()-1)){
+				if (link[v[i]][v[i + 1]] == 1){
+					TOTAL_FLAG[v[i]] = 1;
+					TOTAL_FLAG[v[i+1]] = 1;
+				}
+			}
+			return;;
+		}
+
+		if (index >= li.size()){
+			return;
+		}
+		v.push_back(v_oder[index]);
+		select2(index + 1, Sel + 1);
+		v.pop_back();
+
+		select2(index+1, Sel);
+
+	}
+
+	//유효성 체크, 서로 연결되어 있지 않으면 -1리턴
+	//서로 연결되어 있다면 0 리턴
+	int Valid_check(){
+
+		//파티간의 연결 확인 2개씩 불러와서 체크 수행
+
+		auto iter3 = li.begin();
+		while (iter3 != li.end()){
+			v_oder.push_back(*iter3);
+			iter3++;
+		}
+
+		select2(0, 0);
+
+		int flag = 1;
+		auto iter = li.begin();
+
+		while (iter != li.end())
+		{
+			if (TOTAL_FLAG[*iter] == 0){
+				flag = 0;
+				break;
+			}
+			iter++;
+		}
+
+		return flag;
+	}
+
+
+	//정당의 사람 수만큼 더해서 리턴
+	void SUM(){
+		int res = 0;
+
+		auto iter = li.begin();
+		while (iter != li.end())
+		{
+			res += people[*iter];
+			iter++;
+		}
+
+		people_sum = res;
+	}
+};
+
+int N;
+
+
+_PARTY Party1, Party2;
+int ans = 987654321;
+
+void Select_Part(int index, int party1_num, int party2_num){
+	//각 정당의 파티 선정 수행
+
+	//탈출 조건(index == N)
+	if ((index == N) && (party1_num >= 1) && (party2_num >= 1)){
+		int flag = 1;
+
+		Party1.init();
+		Party2.init();
+
+		if (flag) {
+			flag = Party1.Valid_check();
+			}
+		if(flag) 
+			flag = Party2.Valid_check();
+
+		if (flag){
+			Party1.SUM();
+			Party2.SUM();
+
+			int tmp = abs(Party1.people_sum - Party2.people_sum);
+			ans = ans > tmp ? tmp : ans;
+		}
+		return;
+	}
+
+	if (index >= N) return;
+
+	//코드 작성 수행
+	Party1.li.push_back(index);
+	Select_Part(index + 1, party1_num + 1, party2_num);
+	Party1.li.pop_back();
+
+	Party2.li.push_back(index);
+	Select_Part(index + 1, party1_num, party2_num+1);
+	Party2.li.pop_back();
+}
+
+int main(){
+	ios::sync_with_stdio(0);
+	cin.tie();
+
+	cin >> N;
+
+	FOR0(index, N){
+		cin >> Party1.people[index];
+	}
+
+	FOR0(index, N){
+		int cnt;
+		cin >> cnt;
+		FOR0(i, cnt){
+			int num;
+			cin >> num;
+			num--;
+			Party1.link[index][num]=1;
+		}
+	}
+
+	memset(Party1.visited, 0, sizeof(Party1.visited));
+	memset(Party1.TOTAL_FLAG, 0, sizeof(Party1.TOTAL_FLAG));
+	Party2 = Party1;
+
+	//지역구 갯수 N
+	//정당 1과 정당2의 갯수를 인자로 넘김
+	Select_Part(0, 0, 0);
+
+	if (ans == 987654321)
+		cout << -1;
+	else
+		cout << ans;
+
+	return 0;
+}
