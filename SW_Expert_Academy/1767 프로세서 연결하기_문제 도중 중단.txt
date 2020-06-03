@@ -1,0 +1,129 @@
+//삼성 SW 코딩시험
+// 1767 프로세서 연결하기 문제
+
+#include <iostream>
+#include <vector>
+#include <cstring>
+
+
+#define MAX 13
+#define BOUNDARY(a, b) (((a)>=0)&&((a)<b))
+#define FOR0(a,b) for(int (a) = 0; (a)<(b);(a)++)
+
+using namespace std;
+
+struct INFO
+{
+	int x;
+	int y;
+	int cnt;
+
+	INFO(int a, int b, int c) :x(a), y(b), cnt(c){
+	}
+};
+
+int Max = 0;
+
+int N;
+int Map[MAX][MAX] = { 0, };
+bool Core_Flag[MAX] = { 0, };
+int visited[MAX][MAX] = { -1, };
+int result = 987654321;
+int dy[] = {0,0,-1,1};
+int dx[] = {-1,1,0,0};
+
+vector<INFO> vCore;
+
+//전달인자는 코어의 인덱스와 코어의 정보가 담겨 있는 벡터
+void DFS(int INDEX, int cnt, int connected){
+
+	//탈출조건은 모든 코어를 다 방문한 경우 탈출 
+	if (INDEX == vCore.size()){
+		if (connected > Max){
+			result = connected;
+			Max = connected;
+		}
+		else if (Max == connected){
+		result = result >cnt ? cnt : result;
+		}
+		return;
+	}
+
+	INFO CUR = vCore[INDEX];
+	int cx = CUR.x;
+	int cy = CUR.y;
+	int conncted_Cnt = connected;
+	int nx = cx;
+	int ny = cy;
+	FOR0(dir, 4){
+
+		while (1)
+		{
+			ny += dy[dir];
+			nx += dx[dir];
+
+			//가야할 자리가 
+			if (BOUNDARY(ny, N) && BOUNDARY(nx, N) && (Map[ny][nx] == -1) && (visited[ny][nx] == -1)){
+				
+				if (ny == N || nx == N){
+					conncted_Cnt++;
+				}
+				visited[ny][nx] = INDEX;
+				CUR.cnt++;
+			}
+			else
+			{
+				break;
+			}
+
+		}
+		Core_Flag[INDEX] = 1;
+		DFS(INDEX + 1, (cnt + CUR.cnt), connected+conncted_Cnt);
+		Core_Flag[INDEX] = 0;
+
+		FOR0(y, N){
+			FOR0(x, N){
+				if (visited[y][x] == INDEX) visited[y][x] = -1;
+			}
+		}
+	}
+	
+
+}
+
+int main(){
+
+	ios::sync_with_stdio(0);
+	cin.tie(0);
+	cout.tie(0);
+
+	fill(&visited[0][0], &visited[MAX-1][MAX-1], -1);
+
+	int Test_Case = 0;
+
+	cin >> Test_Case;
+
+	for (int i = 0; i < Test_Case; i++){ 
+		cin >> N;
+
+		FOR0(y, N){
+			FOR0(x, N){
+				cin >> Map[y][x];
+				Map[y][x]--;
+				if ((y == 0) || (y == N - 1)) continue;
+				if ((x == 0) || (x == N - 1)) continue;
+				if ((Map[y][x] == 0)){
+					INFO TMP(x, y, 0);
+					vCore.push_back(TMP);
+				}
+			}
+		}
+		DFS(0, 0, 0);
+
+		cout << result;
+
+
+		//초기화 수행 여기서 다 잡아주어야함.
+	}
+	return 0;
+}
