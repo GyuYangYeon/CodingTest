@@ -8,11 +8,6 @@
 
 #define MAX 50
 #define BOUNDARY(a,b,aa, bb) (((a)>=0)&&((b)>=0)&&((a)<(aa))&&((b)<(bb)))
-#define UP 0
-#define RIGHT 1
-#define DOWN 2
-#define RIGHT 3
-
 
 //0 1 2 3 상 우 하 좌
 
@@ -38,11 +33,22 @@ struct XY
 	XY() :block(0), Cnt(0){}
 };
 
+struct INFO{
+	int x;
+	int y;
+	int cnt;
+};
+
+struct cmp{
+	bool operator()(INFO L, INFO R){
+		return L.cnt > R.cnt;
+	}
+};
+
 XY MAP[MAX][MAX];
 bool visited[MAX][MAX] = { 0, };
-int Cnt_MAP[MAX][MAX] = { 0, };
 
-int sero, garo, start_y, start_x, time = 0;
+int sero, garo, start_y, start_x, TT = 0;
 int res = 0;
 //탐색 우선순위도 상우하좌 순
 int dx[] = { 0, 1, 0, -1 };
@@ -52,26 +58,32 @@ using namespace std;
 void BFS(int x, int y){
 
 	//1-> x, 2-> y
-	queue<pair<int, int>> q;
-	q.push(make_pair(x, y));
+	//queue<pair<int, int>> q;	
+	//q.push(make_pair(x, y));
 
-	int time_tmp = 0;
+	priority_queue<INFO, vector<INFO>, cmp> q;
+	INFO TMP;
+	TMP.x = x;
+	TMP.y = y;
+	TMP.cnt = 0;
+	q.push(TMP);
+
+	visited[y][x] = true;
+
 	while (!q.empty())
 	{
-
-		if (time_tmp == time) break;
-
-		int cx = q.front().first;
-		int cy = q.front().second;
+		INFO OUT = q.top();
 		q.pop();
+		int cx = OUT.x;
+		int cy = OUT.y;
 		int nx = cx;
 		int ny = cy;
 
-		visited[cy][cx] = true;
+		if (OUT.cnt == (TT - 1)) break;
 
 		for (int dir = 0; dir < 4; dir++){
 
-			//현재 좌표에서 다음 터널로 갈 수 없을 경우
+			//현재 좌표에 dir 터널 방향이 막힌 경우
 			if (!MAP[cy][cx].dir[dir]) continue;
 
 			//다음 좌표값 갱신
@@ -83,11 +95,13 @@ void BFS(int x, int y){
 			if ((MAP[cy][cx].dir[dir]==1) &&(MAP[ny][nx].dir[(dir + 2) % 4]==1)){
 
 				visited[ny][nx] = 1;
-				Cnt_MAP[ny][nx] = Cnt_MAP[cy][cx] + 1;
 				res++;
 				MAP[ny][nx].Cnt = MAP[cy][cx].Cnt + 1;
-				time_tmp = MAP[ny][nx].Cnt;
-				q.push(make_pair(nx, ny));
+				INFO NEXT;
+				NEXT.x = nx;
+				NEXT.y = ny;
+				NEXT.cnt = MAP[ny][nx].Cnt;
+				q.push(NEXT);
 				
 
 			}
@@ -108,7 +122,7 @@ int main(){
 
 	for (int num = 1; num <= Test_case; num++){
 
-		cin >> sero >> garo >> start_y >> start_x >> time;
+		cin >> sero >> garo >> start_y >> start_x >> TT;
 
 		for (int y = 0; y < sero; y++){
 			for (int x = 0; x < garo; x++){
@@ -116,34 +130,52 @@ int main(){
 				cin >> tmp;
 
 				if (tmp == 1){
-					bool tmp_dir[] = TUNUL1;
-					memcpy(MAP[y][x].dir, tmp_dir, sizeof(MAP[y][x].dir));
+					MAP[y][x].dir[0] = 1;
+					MAP[y][x].dir[1] = 1;
+					MAP[y][x].dir[2] = 1;
+					MAP[y][x].dir[3] = 1;
 				}
 				else if (tmp == 2){
-					bool tmp_dir[] = TUNUL2;
-					memcpy(MAP[y][x].dir, tmp_dir, sizeof(MAP[y][x].dir));
+					MAP[y][x].dir[0] = 1;
+					MAP[y][x].dir[1] = 0;
+					MAP[y][x].dir[2] = 1;
+					MAP[y][x].dir[3] = 0;
 				}
 				else if (tmp == 3){
-					bool tmp_dir[] = TUNUL3;
-					memcpy(MAP[y][x].dir, tmp_dir, sizeof(MAP[y][x].dir));
+					MAP[y][x].dir[0] = 0;
+					MAP[y][x].dir[1] = 1;
+					MAP[y][x].dir[2] = 0;
+					MAP[y][x].dir[3] = 1;
 				}
 				else if (tmp == 4){
-					bool tmp_dir[] = TUNUL4;
-					memcpy(MAP[y][x].dir, tmp_dir, sizeof(MAP[y][x].dir));
+					MAP[y][x].dir[0] = 1;
+					MAP[y][x].dir[1] = 1;
+					MAP[y][x].dir[2] = 0;
+					MAP[y][x].dir[3] = 0;
 				}
 				else if (tmp == 5){
-					bool tmp_dir[] = TUNUL5;
-					memcpy(MAP[y][x].dir, tmp_dir, sizeof(MAP[y][x].dir));
+					MAP[y][x].dir[0] = 0;
+					MAP[y][x].dir[1] = 1;
+					MAP[y][x].dir[2] = 1;
+					MAP[y][x].dir[3] = 0;
 				}
 				else if (tmp == 6){
-					bool tmp_dir[] = TUNUL6;
-					memcpy(MAP[y][x].dir, tmp_dir, sizeof(MAP[y][x].dir));
+					MAP[y][x].dir[0] = 0;
+					MAP[y][x].dir[1] = 0;
+					MAP[y][x].dir[2] = 1;
+					MAP[y][x].dir[3] = 1;
 				}
 				else if (tmp == 7){
-					bool tmp_dir[] = TUNUL7;
-					memcpy(MAP[y][x].dir, tmp_dir, sizeof(MAP[y][x].dir));
+					MAP[y][x].dir[0] = 1;
+					MAP[y][x].dir[1] = 0;
+					MAP[y][x].dir[2] = 0;
+					MAP[y][x].dir[3] = 1;
 				}
 				else{
+					MAP[y][x].dir[0] = 0;
+					MAP[y][x].dir[1] = 0;
+					MAP[y][x].dir[2] = 0;
+					MAP[y][x].dir[3] = 0;
 					MAP[y][x].block = 1;
 				}
 
@@ -152,10 +184,11 @@ int main(){
 
 		BFS(start_x, start_y);
 
-		cout << '#' << num << ' ' << res << endl;
+
+		cout << '#' << num << ' ' << res+1 << endl;
 
 		memset(visited, 0, sizeof(visited));
-		memset(Cnt_MAP,0, sizeof(Cnt_MAP));
+		memset(MAP, 0, sizeof(MAP));
 
 		res = 0;
  	}
