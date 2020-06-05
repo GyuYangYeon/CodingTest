@@ -1,0 +1,104 @@
+//홈 방법 서비스
+/*
+https://swexpertacademy.com/main/talk/solvingClub/problemView.do?solveclubId=AV6kld8aisgDFASb&contestProbId=AV5V61LqAf8DFAWu&probBoxId=AV732SG66sEDFAW7&type=PROBLEM&problemBoxTitle=%EC%82%BC%EC%84%B1+%EC%8B%A0%EC%9E%85+%EB%AA%A8%EC%9D%98+sw+%EC%97%AD%EB%9F%89%ED%85%8C%EC%8A%A4%ED%8A%B8+%EB%AC%B8%EC%A0%9C%EB%AA%A8%EC%9D%8C&problemBoxCnt=10
+*/
+
+#include <iostream>
+#include <cstring>
+#include <algorithm>
+#include <math.h>
+
+#define MAX_SIZE 20
+#define FOR0(a, b) for(int (a)=0; (a)<(b); (a)++)
+#define FOR1(a,b) for(int (a)=1; (a)<=(b); (a)++)
+
+using namespace std;
+
+int N;
+int M;
+bool Map[MAX_SIZE][MAX_SIZE] = { 0, };
+int Coverage_price= 0;
+int total_house = 0;
+int total_house_price = 0;
+bool visual_map[MAX_SIZE][MAX_SIZE] = { 0, };
+
+struct INFO
+{
+	int HOME_CNT;
+	int HOME_PRICE;
+};
+
+INFO TARGET;
+int res=0;
+
+
+int main(){
+
+	ios::sync_with_stdio(false);
+	cin.tie();
+	cout.tie();
+
+	int test_case = 0;
+	cin >> test_case;
+
+	FOR1(num, test_case){
+	
+		cin >> N >> M;
+		FOR0(Y, N){
+			FOR0(X, N){
+				cin >> Map[Y][X];
+				if (Map[Y][X] == 1) total_house++;
+			}
+		}
+
+		total_house_price = total_house*M;
+
+
+		INFO CUR;
+		CUR.HOME_CNT = 0;
+		CUR.HOME_PRICE = 0;
+		//여기서 부터 K 를 가지고 맵에서 돌리기 시작
+		FOR1(k, 50){
+			Coverage_price = ((k)*(k)) + ((k-1)*(k-1));
+			
+			//만약 구역 내 모든 집들의 요금의 통신망 비용보다 작다면 그냥 탐색하지 말고 패스
+			if (total_house_price < Coverage_price) continue;
+
+			//여기서 부터 좌표를 움직이기 시작
+			FOR0(iy, N){
+				FOR0(ix, N){					
+
+					FOR0(y, N){
+						FOR0(x, N){
+							if (((y - iy) <= (x - ix + (k-1))) && ((y - iy) <= -(x - ix - (k-1))) && ((y - iy) >= (x - ix - (k-1))) && ((y - iy) >= -(x - ix + (k-1)))){
+							
+								visual_map[y][x] = 1;
+								//구역내 집이 있다면
+								if (Map[y][x] == 1){
+									CUR.HOME_CNT++;
+								}
+							
+							}
+						}
+					}
+					CUR.HOME_PRICE = CUR.HOME_CNT*M;					
+					if (((CUR.HOME_PRICE > Coverage_price) && (TARGET.HOME_CNT == 0)) || ((CUR.HOME_PRICE > Coverage_price) && (TARGET.HOME_CNT < CUR.HOME_CNT))){
+						TARGET.HOME_CNT = CUR.HOME_CNT;
+					}
+					CUR.HOME_CNT = 0;
+					memset(visual_map, 0, sizeof(visual_map));
+				}
+			}
+		}
+
+	
+		res = TARGET.HOME_CNT;
+		cout << '#' << num << ' ' << res << '\n';
+		total_house = 0;
+		TARGET.HOME_CNT = 0;
+		TARGET.HOME_PRICE = 0;
+
+	}
+
+	return 0;
+}
