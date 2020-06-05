@@ -1,0 +1,233 @@
+//벌꿀체취
+
+#include <iostream>
+#include <vector>
+#include <math.h>
+#include <cstring>
+
+#define MAP_SIZE 10
+#define HONEY_BOWL_LIST_SIZE 5
+#define BIGGER(a,b) (a)>(b)?(a):(b)
+
+using namespace std;
+
+vector<int> v[2];
+int V_LIST[2][HONEY_BOWL_LIST_SIZE] = { 0, };
+//각 일꾼의 허니 꿀통 골랐을 때의 값 차이 넣기 위한 변수
+int difference = 987654321;
+int res = 0;
+int Map[MAP_SIZE][MAP_SIZE] = { 0, };
+bool visited[MAP_SIZE][MAP_SIZE] = { 0,};
+int size = 0;
+int sel_gesoo = 0;
+int honey_box_size = 0;
+
+int Valid(int cx, int cy){
+
+	bool flag = 1;
+
+	for (int x = 0; x < sel_gesoo; x++){
+		if (!flag) continue;
+		if (cx + x > size) {
+			flag = 0;
+			continue;
+		}
+		if (visited[cy][cx + x]){
+			flag = 0;
+			continue; //방문했다면 스킵
+		}
+	}
+
+	return flag;
+}
+
+void Mark(int cx, int cy, int value){
+
+	for (int x = 0; x < sel_gesoo; x++){
+		visited[cy][cx + x] = value;
+	}
+}
+
+void setup_list(int cx, int cy, int who, int flag){
+
+	//flag 가 1이면벡터 리스트를 만들고
+	//flag가 0이면 벡터 리스트 삭제
+	//리스트를 만들경우
+	if (flag){
+		for (int x = 0; x < sel_gesoo; x++){
+			v[who].push_back(Map[cy][cx + x]);
+		}
+	}
+	//리스트를 삭제할 경우
+	else{
+		while (!v[who].empty())
+		{
+			v[who].clear();
+		}
+	}
+}
+
+
+int pow_sum(int who){
+	int tmp = 0;
+	for (int i = 0; i < sel_gesoo; i++){
+		if (V_LIST[who][i] == 0) break;
+		tmp += pow(V_LIST[who][i], 2);
+	}
+
+	return tmp;
+}
+
+vector<int> local_V;
+int local_max_val = 0;
+void Max_honey_DFS(int index, int sum, int who, int zegop_sum){
+	//사이즈를 체크해서 갱신 시켜주면 된다.
+	//누군지에 따라서 L_LIST[who][index]를 갱신 시켜주기만 하면 됌	
+
+	if (index == v[who].size()){
+		//만약 더한 합이 honeybox_size보다 클 경우 걍 리턴
+		if (sum > honey_box_size) return;
+
+		//만약 더한 합이 허니 박스 사이즈 보다 작을 경우
+		//sum과 박스 사이즈의 차가 더 작은 경우를 갱신
+		if ((difference == 987654321) ||(local_max_val<zegop_sum)){
+			
+			//값 갱신 하기 전에 리스트 초기화
+			for (int i = 0; i < v[who].size(); i++){
+				V_LIST[who][i] = 0;
+			}
+			
+			difference = honey_box_size - sum;
+			//리스트 만들어 주기
+			for (int i = 0; i < local_V.size(); i++){
+				V_LIST[who][i] = local_V[i];
+			}
+
+			local_max_val = pow_sum(who);
+
+		}
+
+		return;
+	}
+
+	local_V.push_back(v[who][index]);
+	Max_honey_DFS(index + 1, sum + v[who][index], who, zegop_sum + (v[who][index] * v[who][index]));
+	local_V.pop_back();
+
+	Max_honey_DFS(index + 1, sum, who, zegop_sum);
+
+}
+
+int sum_valid_chk(vector<int> *p){
+	int sum = 0;
+	for (int i = 0; i < p->size(); i++){
+		sum += (*p)[i];
+	}
+
+	if (sum <= honey_box_size){
+		return 1;
+	}
+	else {
+		return 0;
+	}
+}
+
+void Sel_Map_DFS(int depth){
+
+	//일꾼이 2명이니깐 2명 선택했을 경우 탈출
+	if (depth == 2){
+		//들어올때마다 각 일꾼들이 담아놓은 꿀 리스트 초기화
+		difference = 987654321;
+		local_max_val = 0;
+		memset(V_LIST, 0, sizeof(V_LIST));
+		//맵 선택했을 경우 담을 수 있는 MAX size 탐색 수행
+
+		//만약 첫번째 일꾼이 담을 양보다 많을 경우
+		if (!sum_valid_chk(&v[0])){
+			difference = 987654321;
+			Max_honey_DFS(0, 0, 0, 0);
+		}
+		//담을 양보다 적을 경우에는 list 만들어 주기
+		else{
+			for (int i = 0; i < v[0].size(); i++){
+				V_LIST[0][i] = v[0][i];
+			}
+		}
+
+		if (!sum_valid_chk(&v[1])){
+			difference = 987654321;
+			Max_honey_DFS(0, 0, 1, 0);
+		}
+		//담을 양보다 적을 경우에는 list 만들어 주기
+		else{
+			for (int i = 0; i < v[1].size(); i++){
+				V_LIST[1][i] = v[1][i];
+			}
+		}
+
+
+		//모든 리스트의 값들이 다 갱신 되었음
+		//V_LIST0과 VLIST1에서 모든 인덱스의 값이 영이 아닐 경우 제곱으로 더하고
+		//res에 넣어주면 됨
+		
+		int tmp_res = 0;
+
+		tmp_res += pow_sum(0);
+		tmp_res += pow_sum(1);
+
+		res = BIGGER(tmp_res, res);
+
+		return;
+
+	}
+
+	//탐색 수행
+	for (int y = 0; y < size; y++){
+		for (int x = 0; x <= (size - sel_gesoo); x++){
+			if (visited[y][x]) continue; //방문했다면 스킵
+
+			//해당 좌표로 부터 선택 개수 까지 방문한적 없고
+			//바운더리를 넘어가지 않는 다면 마킹하고 선택 실시
+			if (Valid(x, y)){
+				Mark(x, y, 1);
+				setup_list(x, y, depth, 1);
+				Sel_Map_DFS(depth + 1);
+				setup_list(x, y, depth, 0);
+				Mark(x, y, 0);
+			}
+
+		}
+	}
+
+
+}
+
+int main(){
+
+	ios::sync_with_stdio(false);
+	cin.tie(NULL);
+	cout.tie(NULL);
+	int Test_case = 0;
+	cin >> Test_case;
+
+	for (int num = 0; num < Test_case; num++){
+
+		cin >> size >> sel_gesoo >> honey_box_size;
+
+		for (int y = 0; y < size; y++){
+			for (int x = 0; x < size; x++){
+				cin >> Map[y][x];
+			}
+		}
+
+		Sel_Map_DFS(0);
+
+		cout << '#' << num + 1 << ' ' << res << '\n';
+		memset(Map, 0, sizeof(Map));
+		memset(visited, 0, sizeof(visited));
+		difference = 987654321;
+		res = 0;
+	}
+
+	return 0;
+}
