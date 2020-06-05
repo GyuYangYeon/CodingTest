@@ -1,0 +1,87 @@
+#include <iostream>
+#include <cstring>
+
+#define MAX 12
+#define SMALLER(a, b) (a)<(b)?(a):(b)
+#define DAY 0
+#define MONTH 1
+#define MONTH3 2
+#define YEAR 3
+
+using namespace std;
+
+int res;
+int Price[4];
+int Plan[MAX] = { 0, };
+
+void DFS(int index, int sum){
+
+	if (index > 12){
+		res = SMALLER(sum, res);
+		return;
+	}
+
+	//이용 일정이 아무것도 없으면 걍 스킵
+	if (Plan[index] == 0){
+		DFS(index + 1, sum);
+	}
+
+	//이용 일정이 있으면 다음과 같이 나눠서 진행
+	else{
+		//1일치 이용시
+		int tmp_day = Plan[index];
+		Plan[index] = 0;
+		DFS(index + 1, sum + (tmp_day * Price[DAY]));
+		Plan[index] = tmp_day;
+
+		//한달치 이용시
+		int tmp_mon = Plan[index];
+		Plan[index] = 0;
+		DFS(index + 1, sum + Price[MONTH]);
+		Plan[index] = tmp_day;
+
+		//3달치 이용시
+		int tmp_3mon[3] = {0,};
+		for (int i = 0; i < 3; i++){
+			tmp_3mon[i] = Plan[index + i];
+		}
+		DFS(index + 3, sum + Price[MONTH3]);
+		for (int i = 0; i < 3; i++){
+			Plan[index + i] = tmp_3mon[i];
+		}
+
+	}
+
+
+}
+
+int main(){
+
+	ios::sync_with_stdio(false);
+	cin.tie(NULL);
+	cout.tie(NULL);
+
+	int Test_Case = 0;
+
+	cin >> Test_Case;
+
+	for (int Num = 1; Num <= Test_Case; Num++){
+
+		for (int i = 0; i < 4; i++){
+			cin >> Price[i];
+		}
+
+		for (int i = 0; i < 12; i++){
+			cin >> Plan[i];
+		}
+
+		res = Price[YEAR];
+		DFS(0, 0);
+
+		cout << '#' << Num << ' ' << res << '\n';
+		memset(Price, 0, sizeof(Price));
+		memset(Plan, 0, sizeof(Plan));
+
+	}
+
+}
